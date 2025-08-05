@@ -3,6 +3,10 @@ import styles from './TestimonialsF.module.css';
 import z from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import axios from 'axios';
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
+import { CircularProgress } from '@mui/material';
 
 // schema
 const schema = z.object({
@@ -17,22 +21,47 @@ const schema = z.object({
 const TestimonialsF = () => {
 
     const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm({ resolver: zodResolver(schema) })
+    const navigate = useNavigate();
+    const [loader, setLoader] = useState(false);
     const [eValue, setEValue] = useState();
+    // form API
+    const formAPI = "https://car-parking.emaadinfotech.in/api/testimonial-save";
+
     const onSubmit = (data) => {
         console.log(data);
+        // form Data 
+        const formData = new FormData();
+        formData.append("name", data.name)
+        formData.append("description", data.description)
+        formData.append("status", data.status)
+        formData.append("image", data.image)
 
-
+        axios.post(formAPI, formData).then((res) => {
+            console.log(res);
+            if (res.data.status == "error") {
+                console.log("inside");
+                toast.error(res.data.message.join());
+            } else if(res.data.status == "success"){
+                toast.success("data saved!!!")
+                navigate("/list")
+                
+            }
+            setLoader(false)
+        }).catch((err) => {
+            console.log(err);
+            setLoader(false)
+        })
     }
 
     const handleImage = (data) => {
         console.log(data.target.files[0]);
         const file = data.target.files[0];
         const fileType = ['image/png', 'image/jpeg', 'image/gif']
-        
-        if (file && fileType.includes(file.type)) {
+
+        if (fileType.includes(file.type)) {
             setEValue(URL.createObjectURL(file))
             setValue("image", file)
-        }else{
+        } else {
             window.alert('enter valid img')
         }
 
@@ -75,7 +104,7 @@ const TestimonialsF = () => {
                             id="formFile"
                             onChange={handleImage}
                         />
-                    {eValue && <img width={100} height={100} src={eValue}></img>}
+                        {eValue && <img width={100} height={100} src={eValue}></img>}
                     </div>
 
                     {/* /image  */}
@@ -98,8 +127,10 @@ const TestimonialsF = () => {
                             className="btn btn-primary w-100">
                             Send
                         </button>
+
                     </div>
                     {/* /send btn  */}
+                        {loader && <CircularProgress />}
                 </form>
             </div>
         </>

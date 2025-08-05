@@ -7,3 +7,9 @@ button{
   background-color: #6979F8 !important;
   text-align: #000000 !important;
 }
+/* .pagination{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  list-style: none;
+} */
